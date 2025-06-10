@@ -134,30 +134,20 @@ struct DashboardView: View {
                         Spacer()
                     }
                     
-                    HStack{
-                        Button("Log Weight", systemImage: "scalemass.fill"){
-                        }
-                        .padding(10)
-                        .background((Color.buttonSecondary).opacity(0.2))
-                        .cornerRadius(10)
+                    HStack {
+                        LogWeight(action: {
+                            // Add weight logging action here
+                            print("Log weight tapped")
+                        })
                         
-                        Button("Log Hydration", systemImage: "waterbottle.fill"){
-                        }
-                        .padding(10)
-                        .background((Color.buttonSecondary).opacity(0.2))
-                        .cornerRadius(10)
+                        LogHydration(action: {
+                            // Add hydration logging action here
+                            print("Log hydration tapped")
+                        })
                         
-                        Button("Adjust Goals", systemImage: "figure.run.square.stack.fill"){
-                            showGoalSheet.toggle()
-                        }
-                        .padding(10)
-                        .background((Color.buttonSecondary).opacity(0.2))
-                        .cornerRadius(10)
+                        AdjustGoals(showGoalSheet: $showGoalSheet)
                     }
                     .frame(maxWidth: .infinity, alignment: .leading)
-                    .foregroundStyle(Color.buttonSecondary)
-                    .font(.system(size: 12))
-                    .fontWeight(.semibold)
                     
                     // STATS
                     VStack(alignment: .leading, spacing: 15) {
@@ -165,6 +155,7 @@ struct DashboardView: View {
                             VStack(alignment: .leading) {
                                 Text("Body Weight (kg)")
                                     .font(.system(size: 13))
+                                    .padding(.bottom, 5)
                                     .foregroundStyle(.textSecondary)
                                 HStack {
                                     Image(systemName: "scalemass.fill")
@@ -185,6 +176,7 @@ struct DashboardView: View {
                             VStack(alignment: .leading) {
                                 Text("Steps")
                                     .font(.system(size: 13))
+                                    .padding(.bottom, 5)
                                     .foregroundStyle(.textSecondary)
                                 HStack {
                                     CircularProgressBar(progress: {
@@ -309,7 +301,7 @@ struct DashboardView: View {
                                 showingActiveWorkout = true
                             }
                         }) {
-                            WorkoutCardView(
+                            WorkoutCardHomeView(
                                 workout: todaysWorkout.name,
                                 exercises: todaysWorkout.exercises,
                                 image: todaysWorkout.image,
@@ -321,43 +313,45 @@ struct DashboardView: View {
                         .buttonStyle(PlainButtonStyle())
                         .background(Color(.systemBackground))
                         .cornerRadius(10)
+                        .padding()
                         .overlay(
                             RoundedRectangle(cornerRadius: 10)
                                 .stroke(Color.gray.opacity(0.2), lineWidth: 1)
                         )
-                        HStack{
+                    
+                        HStack {
                             Text("Other Workouts")
                                 .font(.subheadline)
                                 .foregroundStyle(.secondary)
-                            
+
+                            Spacer()
+
                             NavigationLink(destination: WorkoutsView().environmentObject(workoutManager)) {
-                                HStack {
-                                    Text("See all")
-                                        .fontWeight(.semibold)
-                                    Image(systemName: "chevron.right")
-                                }
-                                .frame(maxWidth: .infinity, alignment: .trailing)
-                                .foregroundStyle(.secondary)
+                                Text("See all")
+                                    .foregroundStyle(.secondary)
+                                    .glassEffect()
                             }
                         }
                         
                         // Next workouts
-                        HStack(spacing: 15) {
-                            ForEach(nextWorkouts, id: \.name) { workout in
-                                WorkoutCardView(
-                                    workout: workout.name,
-                                    exercises: workout.exercises,
-                                    image: workout.image,
-                                    isRestDay: workout.isRestDay,
-                                    completed: workout.completed
-                                )
-                                .frame(maxWidth: .infinity)
-                                .background(Color(.systemBackground))
-                                .cornerRadius(10)
-                                .overlay(
-                                    RoundedRectangle(cornerRadius: 10)
-                                        .stroke(Color.gray.opacity(0.2), lineWidth: 1)
-                                )
+                        ScrollView(.horizontal, showsIndicators: false) {
+                            HStack(spacing: 15) {
+                                ForEach(nextWorkouts.filter { !$0.isRestDay }, id: \.name) { workout in
+                                    WorkoutCardHomeView(
+                                        workout: workout.name,
+                                        exercises: workout.exercises,
+                                        image: workout.image,
+                                        isRestDay: workout.isRestDay,
+                                        completed: workout.completed
+                                    )
+                                    .frame(width: 260)
+                                    .background(Color(.systemBackground))
+                                    .cornerRadius(10)
+                                    .overlay(
+                                        RoundedRectangle(cornerRadius: 10)
+                                            .stroke(Color.gray.opacity(0.2), lineWidth: 1)
+                                    )
+                                }
                             }
                         }
                         

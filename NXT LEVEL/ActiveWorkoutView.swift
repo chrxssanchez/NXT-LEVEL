@@ -35,10 +35,10 @@ struct ActiveWorkoutView: View {
                 // Left side - Title
                 VStack(alignment: .leading, spacing: 5) {
                     Text(workout.name)
-                        .font(.system(size: 34, weight: .bold))
+                        .font(Font.custom("Montserrat-Bold", size: 34))
                     
                     Text("\(workoutManager.formattedDuration())")
-                        .font(.system(size: 16))
+                        .font(Font.custom("Montserrat-Bold", size: 16))
                         .foregroundColor(.secondary)
                 }
                 
@@ -49,8 +49,9 @@ struct ActiveWorkoutView: View {
                     workoutManager.endWorkout()
                     dismiss()
                 }
-                .padding(.horizontal, 16)
-                .padding(.vertical, 8)
+                .fontWeight(.semibold)
+                .padding(.horizontal, 10)
+                .padding(.vertical, 5)
                 .background(Color.buttonPrimary)
                 .foregroundColor(.white)
                 .cornerRadius(8)
@@ -76,7 +77,7 @@ struct ActiveWorkoutView: View {
                 }
             }
             .padding(.horizontal)
-            .padding(.top, 12)
+            .padding(.vertical, 12)
             
             // Workout in progress view
             ScrollView {
@@ -85,7 +86,7 @@ struct ActiveWorkoutView: View {
                         WorkoutExerciseCard(exercise: $exercise)
                     }
                 }
-                .padding()
+                .padding(.horizontal)
             }
         }
         .navigationBarHidden(true)
@@ -296,45 +297,64 @@ struct WorkoutExerciseCard: View {
             // Sets
             List {
                 ForEach($exercise.sets) { $set in
-                    HStack(spacing: 40) {
-                        Text("\(set.setNumber)")
-                            .font(.system(size: 18))
-                            .frame(width: 35, height: 35, alignment: .center)
-                            .background(set.isCompleted ? Color(.completedSet): Color.gray.opacity(0.2))
-                            .cornerRadius(8)
+                    // Separate background content and interactive button
+                    ZStack {
+                        // Background content with allowsHitTesting(false)
+                        HStack(spacing: 40) {
+                            Text("\(set.setNumber)")
+                                .font(.system(size: 18))
+                                .frame(width: 35, height: 35, alignment: .center)
+                                .background(set.isCompleted ? Color(.completedSet): Color.gray.opacity(0.2))
+                                .cornerRadius(8)
+                            
+                            TextField("50", text: $set.weight)
+                                .font(.system(size: 18))
+                                .multilineTextAlignment(.center)
+                                .frame(height: 35)
+                                .background(set.isCompleted ? Color(.completedSet): Color.gray.opacity(0.2))
+                                .cornerRadius(8)
+                                .keyboardType(.decimalPad)
+                            
+                            TextField("10", text: $set.reps)
+                                .font(.system(size: 18))
+                                .multilineTextAlignment(.center)
+                                .frame(height: 35)
+                                .background(set.isCompleted ? Color(.completedSet): Color.gray.opacity(0.2))
+                                .cornerRadius(8)
+                                .keyboardType(.numberPad)
+                            
+                            Color.clear
+                                .frame(width: 35, height: 35)
+                        }
+                        .padding(.horizontal, 10)
+                        .padding(.vertical, 5)
+                        .frame(maxWidth: .infinity)
+                        .background(set.isCompleted ? Color(.completedSet).opacity(0.25): Color.clear)
+                        .allowsHitTesting(false)
                         
-                        TextField("50", text: $set.weight)
-                            .font(.system(size: 18))
-                            .multilineTextAlignment(.center)
-                            .frame(height: 35)
-                            .background(set.isCompleted ? Color(.completedSet): Color.gray.opacity(0.2))
-                            .cornerRadius(8)
-                            .keyboardType(.decimalPad)
-                        
-                        TextField("10", text: $set.reps)
-                            .font(.system(size: 18))
-                            .multilineTextAlignment(.center)
-                            .frame(height: 35)
-                            .background(set.isCompleted ? Color(.completedSet): Color.gray.opacity(0.2))
-                            .cornerRadius(8)
-                            .keyboardType(.numberPad)
-                        
-                        Image(systemName: set.isCompleted ? "checkmark" : "checkmark")
-                            .fontWeight(.bold)
-                            .foregroundColor(.black).opacity(0.5)
+                        // Checkmark button on top, interactive
+                        HStack {
+                            Spacer()
+                            Button(action: {
+                                if let index = exercise.sets.firstIndex(where: { $0.id == set.id }) {
+                                    exercise.sets[index].isCompleted.toggle()
+                                }
+                            }) {
+                                Image(systemName: set.isCompleted ? "checkmark" : "checkmark")
+                                    .fontWeight(.bold)
+                                    .foregroundColor(.black).opacity(0.5)
+                                    .frame(width: 35, height: 35)
+                                    .background(set.isCompleted ? Color(.completedSet): Color.gray.opacity(0.2))
+                                    .cornerRadius(8)
+                            }
                             .frame(width: 35, height: 35)
-                            .background(set.isCompleted ? Color(.completedSet): Color.gray.opacity(0.2))
-                            .cornerRadius(8)
+                        }
+                        .padding(.horizontal, 10)
+                        .padding(.vertical, 5)
                     }
-                    .padding(.horizontal, 10)
-                    .padding(.vertical, 5)
-                    .frame(maxWidth: .infinity)
-                    .background(set.isCompleted ? Color(.completedSet).opacity(0.25): Color.clear)
                     .listRowInsets(EdgeInsets())
                     .listRowBackground(Color.clear)
                     .listRowSeparator(.hidden)
-                    .contentShape(Rectangle())
-                    .allowsHitTesting(true)
                     .swipeActions(edge: .trailing, allowsFullSwipe: true) {
                         Button(role: .destructive) {
                             if let index = exercise.sets.firstIndex(where: { $0.id == set.id }) {
@@ -345,7 +365,7 @@ struct WorkoutExerciseCard: View {
                                 }
                             }
                         } label: {
-                            Text("Delete")
+                            Image(systemName: "trash")
                         }
                     }
                     //Swipe to complete the set
@@ -395,16 +415,33 @@ struct WorkoutExerciseCard: View {
                     Button(action: {
                         // Timer action
                     }) {
-                        HStack {
-                            Image(systemName: "timer")
-                            Text("\(exercise.restTime ?? "3:00")")
+                        if #available(iOS 26.0, *) {
+                            HStack {
+                                Image(systemName: "timer")
+                                    .imageScale(.medium)
+                                Text("\(exercise.restTime ?? "3:00")")
+                            }
+                            .font(.system(size: 16, weight: .bold))
+                            .padding(.vertical, 5)
+                            .padding(.horizontal, 5)
+                            .background(Color.buttonSecondary)
+                            .foregroundColor(.white)
+                            .cornerRadius(15)
+                            .glassEffect()
+                        } else {
+                            // Fallback on earlier versions
+                            HStack {
+                                Image(systemName: "timer")
+                                    .imageScale(.medium)
+                                Text("\(exercise.restTime ?? "3:00")")
+                            }
+                            .font(.system(size: 16, weight: .bold))
+                            .padding(.vertical, 5)
+                            .padding(.horizontal, 5)
+                            .background(Color.buttonSecondary)
+                            .foregroundColor(.white)
+                            .cornerRadius(5)
                         }
-                        .font(.system(size: 16, weight: .bold))
-                        .padding(.vertical, 5)
-                        .padding(.horizontal, 5)
-                        .background(Color.buttonSecondary)
-                        .foregroundColor(.white)
-                        .cornerRadius(5)
                     }
                     
                     // History button
@@ -489,3 +526,4 @@ struct ActiveWorkoutView_Previews: PreviewProvider {
             .environmentObject(WorkoutManager())
     }
 } 
+

@@ -17,7 +17,7 @@ struct WorkoutConfigView: View {
     @State private var selectedMuscleGroups: Set<String> = []
     
     // Available muscle groups based on workout type
-    private var availableMuscleGroups: [String] {
+    var availableMuscleGroups: [String] {
         switch workout.name {
         case "Push":
             return ["Chest", "Triceps", "Shoulders"]
@@ -33,7 +33,7 @@ struct WorkoutConfigView: View {
     }
     
     // Get color for muscle group
-    private func colorForMuscleGroup(_ group: String) -> Color {
+    func colorForMuscleGroup(_ group: String) -> Color {
         switch group {
         case "Back":
             return Color(.back) // Light purple
@@ -57,107 +57,111 @@ struct WorkoutConfigView: View {
     }
     
     var body: some View {
-        VStack(spacing: 0) {
-            VStack{
-                // Header
-                HStack {
-                    // Left side - Title
+        NavigationView {
+            VStack(spacing: 0) {
+                VStack {
+                    // Title
                     VStack(alignment: .leading, spacing: 5) {
                         Text(workout.name)
                             .font(Font.custom("Montserrat-Bold", size: 34))
+                            .frame(maxWidth: .infinity, alignment: .center)
+                        
+                        HStack(spacing: 5) {
+                            Text("Scheduled Day:")
+                                .font(.system(size: 16, weight: .semibold))
+                            
+                            Text("\(scheduledDay.dayOfWeek)")
+                                .font(Font.custom("Montserrat-Bold", size: 16))
+                        }
+                        .foregroundColor(.secondary)
                     }
-                    
-                    Spacer()
-                    
-                    // Right side - Actions
-                    Button(action: {
-                        //edit action
-                    }) {
-                        Image(systemName: "pencil")
-                            .font(.system(size: 24))
-                            .foregroundColor(.primary)
-                            .frame(width:35, height:35)
-                            .background(Color.gray.opacity(0.2))
-                            .cornerRadius(5)
+                    .frame(maxWidth: .infinity, alignment: .leading)
+                    .padding(.horizontal)
+                }
+                
+                // Pre-workout configuration
+                ScrollView {
+                    VStack(alignment: .leading, spacing: 20) {
+                        // Muscle group selection
+                        HStack(spacing: 8) {
+                            ForEach(availableMuscleGroups, id: \.self) { group in
+                                    Text(group)
+                                        .font(.system(size: 15))
+                                        .fontWeight(.bold)
+                                        .foregroundStyle(colorForMuscleGroup(group))
+                                        .padding(.horizontal, 12)
+                                        .padding(.vertical, 6)
+                                        .background(colorForMuscleGroup(group).opacity(0.2))
+                                        .cornerRadius(10)
+
+                            }
+                        }
+                        
+                        // Start workout button
+                        Button(action: {
+                            // Start the workout and go to active tracking
+                            workoutManager.startWorkout(workout: workout, scheduledDay: scheduledDay)
+//                            dismiss() // Dismiss sheet to show minimized banner
+                        }) {
+                            Text("Start Workout")
+                                .font(.system(size: 18, weight: .semibold))
+                                .frame(maxWidth: .infinity)
+                                .padding(.vertical, 10)
+                                .background(Color.buttonPrimary)
+                                .foregroundColor(.white)
+                                .cornerRadius(12)
+                        }
+                        
+                        // Exercise previews - Using ConfigExercisePreviewCard that doesn't require binding
+                        ForEach(workout.exercises) { exercise in
+                            ConfigExercisePreviewCard(exercise: exercise)
+                        }
                     }
-                    Button(action: {
-                        // Share action
-                    }) {
-                        Image(systemName: "square.and.arrow.up")
-                            .font(.system(size: 20))
-                            .foregroundColor(.primary)
-                            .frame(width:35, height:35)
-                            .background(Color.gray.opacity(0.2))
-                            .cornerRadius(5)
-                    }
-                    
+                    .padding()
+                }
+            }
+            .navigationBarTitleDisplayMode(.inline)
+            .toolbar {
+                ToolbarItem(placement: .cancellationAction){
                     Button(action: {
                         dismiss()
                     }) {
                         Image(systemName: "xmark")
-                            .font(.system(size: 22))
+                            .font(.system(size: 16))
                             .foregroundColor(.primary)
-                            .padding(8)
-//                            .background(Color(.systemGray6))
-//                            .clipShape(Circle())
+                            .frame(width: 32, height: 32)
+//                            .background(Color.gray.opacity(0.2))
+                            .cornerRadius(8)
                     }
                 }
-                HStack(spacing: 5) {
-                    Text("Scheduled Day:")
-                        .font(.system(size: 16, weight: .semibold))
-                    
-                    Text("\(scheduledDay.dayOfWeek)")
-                        .font(Font.custom("Montserrat-Bold", size: 16))
-                }
-                .frame(maxWidth: .infinity, alignment: .leading)
-                .foregroundColor(.secondary)
-            }
-            .padding(.horizontal)
-            
-            
-            
-            // Pre-workout configuration
-            ScrollView {
-                VStack(alignment: .leading, spacing: 20) {
-                    // Muscle group selection
-                    HStack(spacing: 8) {
-                        ForEach(availableMuscleGroups, id: \.self) { group in
-                                Text(group)
-                                    .font(.system(size: 15))
-                                    .fontWeight(.bold)
-                                    .foregroundStyle(colorForMuscleGroup(group))
-                                    .padding(.horizontal, 12)
-                                    .padding(.vertical, 6)
-                                    .background(colorForMuscleGroup(group).opacity(0.2))
-                                    .cornerRadius(10)
-
+                
+                ToolbarItem() {
+                    HStack(spacing: 12) {
+                        Button(action: {
+                            // Edit action
+                        }) {
+                            Image(systemName: "pencil")
+                                .font(.system(size: 16))
+                                .foregroundColor(.primary)
+                                .frame(width: 32, height: 32)
+//                                .background(Color.gray.opacity(0.2))
+                                .cornerRadius(8)
+                        }
+                        
+                        Button(action: {
+                            // Share action
+                        }) {
+                            Image(systemName: "square.and.arrow.up")
+                                .font(.system(size: 16))
+                                .foregroundColor(.primary)
+                                .frame(width: 32, height: 32)
+                                .cornerRadius(8)
                         }
                     }
-                    
-                    // Start workout button
-                    Button(action: {
-                        // Start the workout and go to active tracking
-                        workoutManager.startWorkout(workout: workout, scheduledDay: scheduledDay)
-//                        dismiss() // Dismiss sheet to show minimized banner
-                    }) {
-                        Text("Start Workout")
-                            .font(.system(size: 18, weight: .semibold))
-                            .frame(maxWidth: .infinity)
-                            .padding(.vertical, 10)
-                            .background(Color.buttonPrimary)
-                            .foregroundColor(.white)
-                            .cornerRadius(12)
-                    }
-                    
-                    // Exercise previews - Using ConfigExercisePreviewCard that doesn't require binding
-                    ForEach(workout.exercises) { exercise in
-                        ConfigExercisePreviewCard(exercise: exercise)
-                    }
                 }
-                .padding()
             }
         }
-        .navigationBarHidden(true)
+        
         .onAppear {
             // Initialize with first muscle group selected
             if let first = availableMuscleGroups.first {
@@ -166,6 +170,7 @@ struct WorkoutConfigView: View {
         }
         .padding(.vertical, 20)
     }
+    
 }
 
 // Renamed to avoid conflict with the one in ActiveWorkoutView

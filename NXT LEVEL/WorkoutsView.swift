@@ -484,7 +484,7 @@ struct WorkoutsView: View {
                     isCurrentDay: dayName == currentDayOfWeek
                 )
             }
-            selectedSchedule = "Default 5-Day"
+            selectedSchedule = "5 Day"
         }
     }
 }
@@ -520,7 +520,8 @@ struct WorkoutDayRow: View {
                 } label: {
                     HStack {
                         if workoutDay.workout.isRestDay {
-                            Text("⏾")
+//                            Image(systemName: "powersleep")
+                            Text("😴")
                                 .font(.system(size: 24))
                                 .padding(.leading, 5)
                         } else {
