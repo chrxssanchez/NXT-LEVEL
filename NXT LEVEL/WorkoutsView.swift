@@ -520,7 +520,7 @@ struct WorkoutDayRow: View {
                 } label: {
                     HStack {
                         if workoutDay.workout.isRestDay {
-                            Text("😴")
+                            Text("⏾")
                                 .font(.system(size: 24))
                                 .padding(.leading, 5)
                         } else {
