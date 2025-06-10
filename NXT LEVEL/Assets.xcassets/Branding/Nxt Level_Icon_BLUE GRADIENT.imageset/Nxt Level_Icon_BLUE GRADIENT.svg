@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg id="Layer_2" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" viewBox="0 0 597.52 326.79">
+  <defs>
+    <style>
+      .cls-1 {
+        fill: url(#New_Gradient_Swatch);
+      }
+
+      .cls-2 {
+        fill: url(#New_Gradient_Swatch-2);
+      }
+    </style>
+    <linearGradient id="New_Gradient_Swatch" data-name="New Gradient Swatch" x1="0" y1="181.27" x2="437.75" y2="181.27" gradientUnits="userSpaceOnUse">
+      <stop offset=".36" stop-color="#7befe9"/>
+      <stop offset=".91" stop-color="#4dbada"/>
+    </linearGradient>
+    <linearGradient id="New_Gradient_Swatch-2" data-name="New Gradient Swatch" x1="299.79" y1="131.24" x2="597.52" y2="131.24" xlink:href="#New_Gradient_Swatch"/>
+  </defs>
+  <g id="Layer_5">
+    <g>
+      <path class="cls-1" d="M1,319.84L219.89,70.15c1.93-2.2,5.8-2.03,7.7.33l38.43,47.68c1.5,1.86,4.32,2.43,6.45,1.31l157.86-83.13c4.46-2.35,9.58,2.63,6.47,6.3l-179.99,212.07c-1.75,2.06-5.25,2.14-7.32.17l-41.06-38.93c-1.63-1.55-4.24-1.88-6.16-.78L7.56,326.11c-4.47,2.55-9.81-2.56-6.56-6.27Z"/>
+      <path class="cls-2" d="M299.79,262.25s307,1.31,297.51-2.22l-165.09-54.11S538.09,24.89,558.8,3.75c1.74-1.78-1.35-4.54-3.93-3.53l-58.15,22.61"/>
+    </g>
+  </g>
+</svg>
