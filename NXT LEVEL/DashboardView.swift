@@ -122,14 +122,14 @@ struct DashboardView: View {
                     
                     HStack {
                         VStack(alignment: .leading) {
-                            Text(formattedDate)
-                                .fontWeight(.regular)
-                                .font(.subheadline)
-                                .foregroundStyle(.secondary)
                             Text("Chris Sanchez")
                                 .fontWeight(.bold)
                                 .font(Font.custom("Montserrat", size: 32))
                                 .foregroundStyle(.primary)
+                            Text(formattedDate)
+                                .fontWeight(.regular)
+                                .font(.subheadline)
+                                .foregroundStyle(.secondary)
                         }
                         Spacer()
                     }
@@ -147,7 +147,10 @@ struct DashboardView: View {
                         
                         AdjustGoals(showGoalSheet: $showGoalSheet)
                     }
+                    .font(.system(size: 14))
                     .frame(maxWidth: .infinity, alignment: .leading)
+                    .glassEffect()
+                    .tint(Color.buttonSecondary)
                     
                     // STATS
                     VStack(alignment: .leading, spacing: 15) {
@@ -276,13 +279,15 @@ struct DashboardView: View {
                     .cornerRadius(20)
                     
                     // WORKOUTS SECTION
-                    VStack(alignment: .leading, spacing: 15) {
+                    VStack(alignment: .leading, spacing: 6) {
                         Text("Workouts")
-                            .font(.title2)
                             .fontWeight(.bold)
+                            .font(Font.custom("Montserrat", size: 20))
+                            .foregroundStyle(.primary)
                         
                         Text("Today's Workout")
-                            .font(.subheadline)
+                            .fontWeight(.semibold)
+                            .font(.system(size: 13))
                             .foregroundStyle(.secondary)
                         
                         // Today's workout card
@@ -301,56 +306,82 @@ struct DashboardView: View {
                                 showingActiveWorkout = true
                             }
                         }) {
-                            WorkoutCardHomeView(
-                                workout: todaysWorkout.name,
-                                exercises: todaysWorkout.exercises,
-                                image: todaysWorkout.image,
-                                isRestDay: todaysWorkout.isRestDay,
-                                completed: todaysWorkout.completed
-                            )
+                            if todaysWorkout.isRestDay {
+                                WorkoutCardRestView(
+                                    workout: todaysWorkout.name,
+                                    exercises: todaysWorkout.exercises,
+                                    image: todaysWorkout.image,
+                                    isRestDay: true,
+                                    completed: todaysWorkout.completed
+                                )
+                            } else {
+                                WorkoutCardHomeView(
+                                    workout: todaysWorkout.name,
+                                    exercises: todaysWorkout.exercises,
+                                    image: todaysWorkout.image,
+                                    isRestDay: todaysWorkout.isRestDay,
+                                    completed: todaysWorkout.completed
+                                )
+                            }
                         }
-//                        .frame(maxWidth: .infinity, height: 122)
                         .buttonStyle(PlainButtonStyle())
-                        .background(Color(.systemBackground))
-                        .cornerRadius(10)
                         .padding()
                         .overlay(
-                            RoundedRectangle(cornerRadius: 10)
-                                .stroke(Color.gray.opacity(0.2), lineWidth: 1)
+                            RoundedRectangle(cornerRadius: 20)
+                                .stroke(Color.gray, lineWidth: 1)
                         )
+                        .cornerRadius(20)
                     
                         HStack {
                             Text("Other Workouts")
-                                .font(.subheadline)
+                                .fontWeight(.semibold)
+                                .font(.system(size: 13))
                                 .foregroundStyle(.secondary)
 
                             Spacer()
 
                             NavigationLink(destination: WorkoutsView().environmentObject(workoutManager)) {
                                 Text("See all")
-                                    .foregroundStyle(.secondary)
-                                    .glassEffect()
+                                    .fontWeight(.semibold)
+                                    .font(.system(size: 13))
+                                    .foregroundStyle(.primary)
                             }
+                            .padding(5)
                         }
                         
                         // Next workouts
                         ScrollView(.horizontal, showsIndicators: false) {
                             HStack(spacing: 15) {
-                                ForEach(nextWorkouts.filter { !$0.isRestDay }, id: \.name) { workout in
-                                    WorkoutCardHomeView(
-                                        workout: workout.name,
-                                        exercises: workout.exercises,
-                                        image: workout.image,
-                                        isRestDay: workout.isRestDay,
-                                        completed: workout.completed
-                                    )
-                                    .frame(width: 260)
-                                    .background(Color(.systemBackground))
-                                    .cornerRadius(10)
-                                    .overlay(
-                                        RoundedRectangle(cornerRadius: 10)
-                                            .stroke(Color.gray.opacity(0.2), lineWidth: 1)
-                                    )
+                                ForEach(nextWorkouts, id: \.name) { workout in
+                                    if workout.isRestDay {
+                                        WorkoutCardRestView(
+                                            workout: workout.name,
+                                            exercises: workout.exercises,
+                                            image: workout.image,
+                                            isRestDay: true,
+                                            completed: workout.completed
+                                        )
+                                        .frame(maxWidth: .infinity, maxHeight: 250)
+                                        .background(Color(.systemBackground))
+                                        .cornerRadius(10)
+                                        .overlay(
+                                            RoundedRectangle(cornerRadius: 20)
+                                                .stroke(Color.gray, lineWidth: 1)
+                                        )
+                                    } else {
+                                        WorkoutCardHomeView(
+                                            workout: workout.name,
+                                            exercises: workout.exercises,
+                                            image: workout.image,
+                                            isRestDay: workout.isRestDay,
+                                            completed: workout.completed
+                                        )
+                                        .overlay(
+                                            RoundedRectangle(cornerRadius: 20)
+                                                .stroke(Color.gray, lineWidth: 1)
+                                        )
+                                        .cornerRadius(20)
+                                    }
                                 }
                             }
                         }

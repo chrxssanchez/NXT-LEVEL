@@ -15,6 +15,8 @@ struct WorkoutConfigView: View {
     
     // Selected muscle groups
     @State private var selectedMuscleGroups: Set<String> = []
+    @State private var isLoading = false
+    @State private var errorMessage: String? = nil
     
     // Available muscle groups based on workout type
     var availableMuscleGroups: [String] {
@@ -85,15 +87,66 @@ struct WorkoutConfigView: View {
                         // Muscle group selection
                         HStack(spacing: 8) {
                             ForEach(availableMuscleGroups, id: \.self) { group in
-                                    Text(group)
-                                        .font(.system(size: 15))
-                                        .fontWeight(.bold)
-                                        .foregroundStyle(colorForMuscleGroup(group))
-                                        .padding(.horizontal, 12)
-                                        .padding(.vertical, 6)
-                                        .background(colorForMuscleGroup(group).opacity(0.2))
-                                        .cornerRadius(10)
-
+                                Text(group)
+                                    .font(.system(size: 15))
+                                    .fontWeight(.bold)
+                                    .foregroundStyle(colorForMuscleGroup(group))
+                                    .padding(.horizontal, 12)
+                                    .padding(.vertical, 6)
+                                    .background(colorForMuscleGroup(group).opacity(0.2))
+                                    .cornerRadius(10)
+                            }
+                        }
+                        
+                        // Show loading state or exercises
+                        if isLoading {
+                            VStack(spacing: 10) {
+                                ProgressView()
+                                Text("Loading exercises...")
+                                    .font(.system(size: 16))
+                                    .foregroundColor(.secondary)
+                            }
+                            .frame(maxWidth: .infinity, alignment: .center)
+                            .padding()
+                        } else if let error = errorMessage {
+                            VStack(spacing: 10) {
+                                Image(systemName: "exclamationmark.triangle")
+                                    .font(.system(size: 24))
+                                    .foregroundColor(.red)
+                                Text(error)
+                                    .font(.system(size: 16))
+                                    .foregroundColor(.red)
+                                    .multilineTextAlignment(.center)
+                                Button("Try Again") {
+                                    Task {
+                                        await loadExercises()
+                                    }
+                                }
+                                .padding(.top, 8)
+                            }
+                            .frame(maxWidth: .infinity, alignment: .center)
+                            .padding()
+                        } else if workoutManager.availableExercises.isEmpty {
+                            VStack(spacing: 10) {
+                                Image(systemName: "magnifyingglass")
+                                    .font(.system(size: 24))
+                                    .foregroundColor(.secondary)
+                                Text("No exercises found")
+                                    .font(.system(size: 16))
+                                    .foregroundColor(.secondary)
+                                Button("Try Again") {
+                                    Task {
+                                        await loadExercises()
+                                    }
+                                }
+                                .padding(.top, 8)
+                            }
+                            .frame(maxWidth: .infinity, alignment: .center)
+                            .padding()
+                        } else {
+                            // Display available exercises
+                            ForEach(workoutManager.availableExercises, id: \.name) { exercise in
+                                ExercisePreviewCard(exercise: exercise)
                             }
                         }
                         
@@ -110,11 +163,6 @@ struct WorkoutConfigView: View {
                                 .background(Color.buttonPrimary)
                                 .foregroundColor(.white)
                                 .cornerRadius(12)
-                        }
-                        
-                        // Exercise previews - Using ConfigExercisePreviewCard that doesn't require binding
-                        ForEach(workout.exercises) { exercise in
-                            ConfigExercisePreviewCard(exercise: exercise)
                         }
                     }
                     .padding()
@@ -167,153 +215,106 @@ struct WorkoutConfigView: View {
             if let first = availableMuscleGroups.first {
                 selectedMuscleGroups.insert(first)
             }
+            
+            // Load exercises for the workout type
+            Task {
+                await loadExercises()
+            }
         }
         .padding(.vertical, 20)
     }
     
+    private func loadExercises() async {
+        isLoading = true
+        errorMessage = nil
+        
+        do {
+            await workoutManager.loadExercisesForWorkout(workout.name)
+            if workoutManager.availableExercises.isEmpty {
+                errorMessage = "No exercises found for this workout type"
+            }
+        } catch {
+            errorMessage = "Failed to load exercises. Please check your internet connection and try again."
+        }
+        
+        isLoading = false
+    }
 }
 
-// Renamed to avoid conflict with the one in ActiveWorkoutView
-struct ConfigExercisePreviewCard: View {
-    let exercise: Exercise
+// Exercise preview card
+struct ExercisePreviewCard: View {
+    let exercise: APIExercise
+    @EnvironmentObject var workoutManager: WorkoutManager
+    @State private var isAdded = false
     
     var body: some View {
-        VStack(spacing: 0) {
-            // Header
+        VStack(alignment: .leading, spacing: 8) {
+            // Exercise name and type
             HStack {
-                Text(exercise.equipmentType)
-                    .font(.system(size: 11))
-                    .fontWeight(.bold)
-                    .foregroundStyle(Color.buttonSecondary)
-                    .padding(.vertical, 5)
-                    .padding(.horizontal, 5)
-                    .background((Color.buttonSecondary).opacity(0.2))
-                    .foregroundColor(.white)
-                    .cornerRadius(5)
-                Text(exercise.name)
-                    .font(Font.custom("Montserrat-Bold", size: 18))
-                
-                Image(systemName: "chevron.right")
-                    .foregroundColor(.gray)
-                
-                Spacer()
-                
-                Button(action: {
-                    // Exercise options
-                }) {
-                    Image(systemName: "ellipsis")
-                        .padding(8)
+                VStack(alignment: .leading, spacing: 4) {
+                    Text(exercise.name)
+                        .font(.system(size: 18, weight: .semibold))
+                    Text(exercise.type)
+                        .font(.system(size: 14))
                         .foregroundColor(.secondary)
                 }
-            }
-            .padding(.horizontal, 16)
-            .padding(.top, 16)
-            .padding(.bottom, 8)
-            
-            // Target reps
-            HStack {
-                Text("Target Reps:")
-                    .font(.system(size: 15))
-                    .foregroundColor(.secondary)
-                
                 Spacer()
                 
-                Text("\(exercise.repRangeMinSuggestion ?? 8)")
-                    .font(.system(size: 15, weight: .bold))
-                    .foregroundStyle(.secondary)
-                    .frame(maxWidth: .infinity)
-                    .padding(.vertical, 5)
-                    .background(Color(.systemGray5))
-                    .cornerRadius(8)
-                
-                Text("-")
-                    .font(.system(size: 15))
-                    .foregroundColor(.secondary)
-                
-                Text("\(exercise.repRangeMaxSuggestion ?? 12)")
-                    .font(.system(size: 15, weight: .bold))
-                    .foregroundStyle(.secondary)
-                    .frame(maxWidth: .infinity)
-                    .padding(.vertical, 5)
-                    .background(Color(.systemGray5))
-                    .cornerRadius(8)
-            }
-            .padding(.horizontal, 16)
-            
-            // Set Config
-            HStack{
-                Text("Sets:")
-                    .font(.system(size: 13))
-                    .foregroundStyle(.secondary)
-                Text("3")
-                    .font(.system(size: 15, weight: .bold))
-                    .foregroundStyle(.secondary)
-                    .frame(maxWidth: .infinity)
-                    .padding(.vertical, 5)
-                    .background(Color(.systemGray5))
-                    .cornerRadius(8)
-                Text("Weight (kg):")
-                    .font(.system(size: 13))
-                    .foregroundStyle(.secondary)
-                Text("10")
-                    .font(.system(size: 15, weight: .bold))
-                    .foregroundStyle(.secondary)
-                    .frame(maxWidth: .infinity)
-                    .padding(.vertical, 5)
-                    .background(Color(.systemGray5))
-                    .cornerRadius(8)
-            }
-            .padding(.horizontal, 16)
-            .padding(.vertical, 8)
-            
-            Divider()
-                .frame(height: 1)
-                .overlay(.outline)
-                
-            HStack {
                 Button(action: {
-                    // Timer action
-                }) {
-                    HStack(spacing: 5) {
-                        Image(systemName: "timer")
-                        HStack(spacing: 2) {
-                            Text("Rest:")
-                            Text("\(exercise.restTime ?? "3:00")")
-                        }
+                    if !isAdded {
+                        workoutManager.addExercise(exercise)
+                        isAdded = true
                     }
-                    .font(.system(size: 13, weight: .bold))
-                    .padding(.vertical, 5)
-                    .padding(.horizontal, 10)
-                    .background(Color.buttonSecondary)
-                    .foregroundColor(.white)
-                    .cornerRadius(5)
-                }
-                Spacer()
-                
-                Button(action: {
-                    // Show stats
                 }) {
-                    Image(systemName: "chart.xyaxis.line")
-                        .font(.system(size: 15, weight: .bold))
-                        .foregroundStyle(Color.buttonSecondary)
-                        .padding(.vertical, 5)
-                        .padding(.horizontal, 5)
-                        .background((Color.buttonSecondary).opacity(0.2))
-                        .foregroundColor(.white)
-                        .cornerRadius(5)
+                    Image(systemName: isAdded ? "checkmark.circle.fill" : "plus.circle")
+                        .foregroundColor(isAdded ? .green : .accentColor)
+                        .font(.system(size: 24))
                 }
+                
+                Text(exercise.difficulty.capitalized)
+                    .font(.system(size: 14))
+                    .padding(.horizontal, 8)
+                    .padding(.vertical, 4)
+                    .background(
+                        RoundedRectangle(cornerRadius: 8)
+                            .fill(difficultyColor(exercise.difficulty))
+                    )
             }
-            .padding(.horizontal, 16)
-            .padding(.vertical, 10)
             
-        }
-        .background(Color.white)
-        .cornerRadius(16)
-        .overlay {
-                RoundedRectangle(cornerRadius: 20)
-                .strokeBorder(Color(.outline), lineWidth: 1)
+            // Equipment
+            HStack {
+                Image(systemName: "dumbbell.fill")
+                    .foregroundColor(.secondary)
+                Text(exercise.equipment)
+                    .font(.system(size: 14))
+                    .foregroundColor(.secondary)
             }
-//        .shadow(color: Color.black.opacity(0.05), radius: 5, x: 0, y: 2)
+            
+            // Expandable instructions
+            DisclosureGroup("Instructions") {
+                Text(exercise.instructions)
+                    .font(.system(size: 14))
+                    .foregroundColor(.secondary)
+                    .padding(.vertical, 8)
+            }
+        }
+        .padding()
+        .background(Color(.systemBackground))
+        .cornerRadius(12)
+        .shadow(color: Color.black.opacity(0.05), radius: 5, x: 0, y: 2)
+    }
+    
+    private func difficultyColor(_ difficulty: String) -> Color {
+        switch difficulty.lowercased() {
+        case "beginner":
+            return Color.green.opacity(0.2)
+        case "intermediate":
+            return Color.yellow.opacity(0.2)
+        case "expert":
+            return Color.red.opacity(0.2)
+        default:
+            return Color.gray.opacity(0.2)
+        }
     }
 }
 

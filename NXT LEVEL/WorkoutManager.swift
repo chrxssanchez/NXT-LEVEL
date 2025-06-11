@@ -7,6 +7,7 @@
 
 import SwiftUI
 import Combine
+import Foundation
 
 class WorkoutManager: ObservableObject {
     // Current active workout
@@ -22,6 +23,9 @@ class WorkoutManager: ObservableObject {
     
     // Timer publisher
     private var timer: AnyCancellable?
+    
+    private let exerciseService = ExerciseService()
+    @Published var availableExercises: [APIExercise] = []
     
     init() {
         loadSavedSchedules()
@@ -146,5 +150,92 @@ class WorkoutManager: ObservableObject {
         if let encoded = try? JSONEncoder().encode(savedWorkoutSchedules) {
             UserDefaults.standard.set(encoded, forKey: scheduleStorageKey)
         }
+    }
+    
+    // Convert API Exercise to App Exercise
+    private func convertAPIExerciseToAppExercise(_ apiExercise: APIExercise) -> Exercise {
+        return Exercise(
+            name: apiExercise.name,
+            sets: [
+                ExerciseSet(setNumber: 1),
+                ExerciseSet(setNumber: 2),
+                ExerciseSet(setNumber: 3)
+            ],
+            repRangeMinSuggestion: getDefaultRepRange(for: apiExercise.type).min,
+            repRangeMaxSuggestion: getDefaultRepRange(for: apiExercise.type).max,
+            restTime: getDefaultRestTime(for: apiExercise.difficulty),
+            equipmentType: apiExercise.equipment
+        )
+    }
+    
+    // Get default rep range based on exercise type
+    private func getDefaultRepRange(for type: String) -> (min: Int, max: Int) {
+        switch type.lowercased() {
+        case "strength":
+            return (6, 8)
+        case "powerlifting":
+            return (3, 5)
+        case "olympic_weightlifting":
+            return (2, 4)
+        case "cardio":
+            return (15, 20)
+        default:
+            return (8, 12)
+        }
+    }
+    
+    // Get default rest time based on difficulty
+    private func getDefaultRestTime(for difficulty: String) -> String {
+        switch difficulty.lowercased() {
+        case "beginner":
+            return "1:30"
+        case "intermediate":
+            return "2:00"
+        case "expert":
+            return "3:00"
+        default:
+            return "2:00"
+        }
+    }
+    
+    func loadExercisesForWorkout(_ workoutType: String) async {
+        print("Loading exercises for workout type: \(workoutType)")
+        do {
+            switch workoutType.lowercased() {
+            case "push":
+                print("Fetching push exercises...")
+                availableExercises = try await exerciseService.getExercisesForPushDay()
+                print("Received \(availableExercises.count) push exercises")
+            case "pull":
+                print("Fetching pull exercises...")
+                availableExercises = try await exerciseService.getExercisesForPullDay()
+                print("Received \(availableExercises.count) pull exercises")
+            case "legs":
+                print("Fetching leg exercises...")
+                availableExercises = try await exerciseService.getExercisesForLegDay()
+                print("Received \(availableExercises.count) leg exercises")
+            default:
+                print("Unknown workout type: \(workoutType)")
+            }
+        } catch {
+            print("Error loading exercises: \(error)")
+            availableExercises = [] // Clear exercises on error
+        }
+    }
+    
+    // Add exercise to current workout
+    func addExercise(_ apiExercise: APIExercise) {
+        guard var workout = currentWorkout else { return }
+        let appExercise = convertAPIExerciseToAppExercise(apiExercise)
+        workout.exercises.append(appExercise)
+        currentWorkout = workout
+    }
+    
+    // Remove exercise from current workout
+    func removeExercise(at index: Int) {
+        guard var workout = currentWorkout else { return }
+        guard index < workout.exercises.count else { return }
+        workout.exercises.remove(at: index)
+        currentWorkout = workout
     }
 } 

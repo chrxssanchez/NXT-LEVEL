@@ -74,7 +74,6 @@ struct GoalAdjustmentCard: View {
                 Spacer()
                 Text("\(value)")
                     .font(.system(size: 16, weight: .semibold))
-                    .foregroundColor(.secondary)
             }
             
             Slider(value: Binding(

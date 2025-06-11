@@ -424,10 +424,11 @@ struct WorkoutExerciseCard: View {
                             .font(.system(size: 16, weight: .bold))
                             .padding(.vertical, 5)
                             .padding(.horizontal, 5)
-                            .background(Color.buttonSecondary)
+                            .glassEffect()
+//                            .background(Color.buttonSecondary)
+                            .foregroundStyle(Color.buttonSecondary)
                             .foregroundColor(.white)
                             .cornerRadius(15)
-                            .glassEffect()
                         } else {
                             // Fallback on earlier versions
                             HStack {

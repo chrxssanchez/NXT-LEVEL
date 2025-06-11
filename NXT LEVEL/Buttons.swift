@@ -9,53 +9,73 @@ import SwiftUI
 
 struct LogWeight: View {
     var action: () -> Void
+    var iconOnly: Bool = false
     
     var body: some View {
         Button(action: action) {
-            Label("Log Weight", systemImage: "scalemass.fill")
+            if iconOnly {
+                Image(systemName: "scalemass.fill")
+            } else {
+                Label("Log Weight", systemImage: "scalemass.fill")
+            }
         }
         .padding(10)
         .cornerRadius(10)
-        .font(.system(size: 12))
         .fontWeight(.semibold)
-        .glassEffect()
+        .tint(.buttonSecondary)
     }
 }
 
 struct LogHydration: View {
     var action: () -> Void
+    var iconOnly: Bool = false
     
     var body: some View {
         Button(action: action) {
-            Label("Log Hydration", systemImage: "waterbottle.fill")
+            if iconOnly {
+                Image(systemName: "waterbottle.fill")
+            } else {
+                Label("Log Hydration", systemImage: "waterbottle.fill")
+            }
         }
         .padding(10)
         .cornerRadius(10)
-        .font(.system(size: 12))
         .fontWeight(.semibold)
-        .glassEffect()
+        .tint(.buttonSecondary)
     }
 }
 
 struct AdjustGoals: View {
     @Binding var showGoalSheet: Bool
+    var iconOnly: Bool = false
     
     var body: some View {
         Button(action: { showGoalSheet.toggle() }) {
-            Label("Adjust Goals", systemImage: "figure.run.square.stack.fill")
+            if iconOnly {
+                Image(systemName: "figure.run.square.stack.fill")
+            } else {
+                Label("Adjust Goals", systemImage: "figure.run.square.stack.fill")
+            }
         }
         .padding(10)
         .cornerRadius(10)
-        .font(.system(size: 12))
         .fontWeight(.semibold)
-        .glassEffect()
+        .tint(.buttonSecondary)
     }
 }
 
 #Preview {
-    HStack {
-        LogWeight(action: {})
-        LogHydration(action: {})
-        AdjustGoals(showGoalSheet: .constant(false))
+    VStack {
+        HStack {
+            LogWeight(action: {})
+            LogHydration(action: {})
+            AdjustGoals(showGoalSheet: .constant(false))
+        }
+        HStack {
+            LogWeight(action: {}, iconOnly: true)
+            LogHydration(action: {}, iconOnly: true)
+            AdjustGoals(showGoalSheet: .constant(false), iconOnly: true)
+        }
+        .glassEffect()
     }
 }

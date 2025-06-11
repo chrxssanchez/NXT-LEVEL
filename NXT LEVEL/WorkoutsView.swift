@@ -298,8 +298,8 @@ struct WorkoutsView: View {
                                     }
                                     
                                     List {
-                                        ForEach(workoutDays) { workoutDay in
-                                            let index = workoutDays.firstIndex(of: workoutDay) ?? 0
+                                        ForEach($workoutDays) { workoutDay in
+                                            let index = workoutDays.firstIndex(of: workoutDay.wrappedValue) ?? 0
                                             WorkoutDayRow(
                                                 workoutDay: workoutDay,
                                                 isEditMode: isEditMode,
@@ -308,9 +308,8 @@ struct WorkoutsView: View {
                                                 onTap: { },
                                                 onWorkoutChange: { newWorkoutName in
                                                     // Update the workout for this day
-                                                    if let index = workoutDays.firstIndex(of: workoutDay),
-                                                       let workout = workoutPlans[newWorkoutName] {
-                                                        workoutDays[index].workout = workout
+                                                    if let workout = workoutPlans[newWorkoutName] {
+                                                        workoutDay.workout.wrappedValue = workout
                                                     }
                                                 }
                                             )
@@ -332,12 +331,12 @@ struct WorkoutsView: View {
                         } else {
                             // Regular view in normal mode
                             VStack(spacing: 0) {
-                                ForEach(workoutDays) { workoutDay in
-                                    if workoutDays.firstIndex(of: workoutDay) != 0 {
+                                ForEach($workoutDays) { workoutDay in
+                                    if workoutDays.firstIndex(of: workoutDay.wrappedValue) != 0 {
                                         Divider().padding(.horizontal, 0)
                                     }
                                     
-                                    let index = workoutDays.firstIndex(of: workoutDay) ?? 0
+                                    let index = workoutDays.firstIndex(of: workoutDay.wrappedValue) ?? 0
                                     WorkoutDayRow(
                                         workoutDay: workoutDay,
                                         isEditMode: isEditMode,
@@ -345,11 +344,11 @@ struct WorkoutsView: View {
                                         isLast: index == workoutDays.count - 1,
                                         onTap: {
                                             if !isEditMode {
-                                                if !workoutDay.workout.isRestDay {
-                                                    selectedDay = workoutDay
+                                                if !workoutDay.wrappedValue.workout.isRestDay {
+                                                    selectedDay = workoutDay.wrappedValue
                                                     selectedWorkout = ActiveWorkout(
-                                                        name: workoutDay.workout.name,
-                                                        exercises: getExercisesForWorkout(workoutDay.workout.name)
+                                                        name: workoutDay.wrappedValue.workout.name,
+                                                        exercises: getExercisesForWorkout(workoutDay.wrappedValue.workout.name)
                                                     )
                                                     showingActiveWorkout = true
                                                 }
@@ -357,9 +356,8 @@ struct WorkoutsView: View {
                                         },
                                         onWorkoutChange: { newWorkoutName in
                                             // Update the workout for this day
-                                            if let index = workoutDays.firstIndex(of: workoutDay),
-                                               let workout = workoutPlans[newWorkoutName] {
-                                                workoutDays[index].workout = workout
+                                            if let workout = workoutPlans[newWorkoutName] {
+                                                workoutDay.workout.wrappedValue = workout
                                             }
                                         }
                                     )
@@ -490,7 +488,7 @@ struct WorkoutsView: View {
 }
 
 struct WorkoutDayRow: View {
-    let workoutDay: WorkoutDay
+    @Binding var workoutDay: WorkoutDay
     let isEditMode: Bool
     let isFirst: Bool
     let isLast: Bool
@@ -520,7 +518,6 @@ struct WorkoutDayRow: View {
                 } label: {
                     HStack {
                         if workoutDay.workout.isRestDay {
-//                            Image(systemName: "powersleep")
                             Text("😴")
                                 .font(.system(size: 24))
                                 .padding(.leading, 5)

@@ -172,6 +172,55 @@ struct WorkoutCardHomeView: View {
     }
 }
 
+struct WorkoutCardRestView: View {
+    let workout: String
+    let exercises: Int
+    let image: String
+    let isRestDay: Bool
+    let completed: Bool
+    
+    init(workout: String, exercises: Int, image: String, isRestDay: Bool = false, completed: Bool = false) {
+        self.workout = workout
+        self.exercises = exercises
+        self.image = image
+        self.isRestDay = isRestDay
+        self.completed = completed
+    }
+    
+    var body: some View {
+        HStack {
+            if isRestDay {
+                Text("😴")
+                    .font(.system(size: 60))
+                    .padding(.leading, 5)
+            } else {
+                Image(image)
+                    .resizable()
+                    .scaledToFit()
+                    .frame(width: 35, height: 35)
+                    .padding(.leading, 5)
+            }
+            
+            
+            VStack(alignment: .leading, spacing: 4) {
+                Text(workout)
+                    .fontWeight(.semibold)
+                    .font(Font.custom("Montserrat", size: 15))
+                
+                Text("No workout planned for today")
+                    .font(.system(size: 12))
+                    .foregroundStyle(.textSecondary)
+            }
+            
+            .padding(.leading, 5)
+            
+            Spacer()
+        }
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .padding(8)
+    }
+}
+
 #Preview {
     VStack(spacing: 10) {
         WorkoutCardView(workout: "Push", exercises: 6, image: "chest-muscle", completed: true)
@@ -183,7 +232,9 @@ struct WorkoutCardHomeView: View {
     
     VStack(spacing: 10) {
         WorkoutCardHomeView(workout: "Push", exercises: 6, image: "chest-muscle")
-        WorkoutCardHomeView(workout: "Pull", exercises: 7, image: "back-muscle")
-        WorkoutCardHomeView(workout: "Legs", exercises: 6, image: "quadriceps")
     }
+    VStack(spacing: 10) {
+        WorkoutCardRestView(workout: "Rest Day", exercises: 0, image: "", isRestDay: true)
+    }
+    
 }

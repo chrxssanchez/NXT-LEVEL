@@ -10,17 +10,6 @@ import SwiftUI
 struct ContentView: View {
     @StateObject private var workoutManager = WorkoutManager()
     
-    init() {
-            // Set the background color of the Tab Bar
-            let appearance = UITabBarAppearance()
-            appearance.configureWithOpaqueBackground()
-        appearance.backgroundColor = UIColor.systemBackground
-            
-            // Apply the appearance to all tab bars
-            UITabBar.appearance().standardAppearance = appearance
-            UITabBar.appearance().scrollEdgeAppearance = appearance
-        }
-    
     var body: some View {
         ZStack(alignment: .bottom) {
         TabView {
@@ -31,8 +20,8 @@ struct ContentView: View {
                 WorkoutsView()
                         .environmentObject(workoutManager)
             }
-            Tab("Stats", systemImage: "chart.line.text.clipboard") {
-                    Text("Stats View")
+            Tab("Mertics", systemImage: "chart.line.text.clipboard") {
+                StatsView()
             }
             Tab("Settings", systemImage: "person.circle") {
                 SettingsView()
@@ -67,12 +56,10 @@ struct MinimizedWorkoutBanner: View {
             HStack {
                 VStack(alignment: .leading, spacing: 2) {
                     Text(workoutManager.currentWorkout?.name ?? "Workout")
-                        .font(.system(size: 16, weight: .bold))
-                        .foregroundColor(.white)
+                        .font(Font.custom("Montserrat-Bold", size: 20))
                     
                     Text("In Progress - \(workoutManager.formattedDuration())")
-                        .font(.system(size: 12))
-                        .foregroundColor(.white.opacity(0.9))
+                        .font(.system(size: 16).weight(.semibold))
                 }
                 
                 Spacer()
@@ -81,8 +68,7 @@ struct MinimizedWorkoutBanner: View {
                     workoutManager.endWorkout()
                 }) {
                     Image(systemName: "stop.circle.fill")
-                        .font(.system(size: 22))
-                        .foregroundColor(.white)
+                        .font(.system(size: 30))
                 }
                 .padding(.trailing, 8)
                 
@@ -90,17 +76,16 @@ struct MinimizedWorkoutBanner: View {
                     workoutManager.togglePause()
                 }) {
                     Image(systemName: workoutManager.isPaused ? "play.circle.fill" : "pause.circle.fill")
-                        .font(.system(size: 22))
-                        .foregroundColor(.white)
+                        .font(.system(size: 30))
+//                        .foregroundColor(.white)
                 }
             }
-            .padding(12)
-            .background(Color.buttonPrimary)
-            .cornerRadius(15)
-            .shadow(color: Color.black.opacity(0.2), radius: 4, x: 0, y: 2)
-            .padding(.horizontal)
+            .padding()
+            .foregroundStyle(Color.buttonPrimary)
         }
         .buttonStyle(PlainButtonStyle())
+        .glassEffect()
+        .padding(.horizontal)
         .sheet(isPresented: $showWorkout) {
             if let workout = workoutManager.currentWorkout, let scheduledDay = workoutManager.currentScheduledDay {
                 ActiveWorkoutView(workout: workout, scheduledDay: scheduledDay)
