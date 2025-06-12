@@ -44,13 +44,13 @@ struct GoalAdjustmentView: View {
             .padding()
             .navigationTitle("Adjust Goals")
             .navigationBarTitleDisplayMode(.inline)
-            .toolbar {
-                ToolbarItem(placement: .cancellationAction) {
-                    Button("Cancel") {
-                        dismiss()
-                    }
-                }
-            }
+//            .toolbar {
+//                ToolbarItem(placement: .cancellationAction) {
+//                    Button("Cancel") {
+//                        dismiss()
+//                    }
+//                }
+//            }
         }
     }
 }
