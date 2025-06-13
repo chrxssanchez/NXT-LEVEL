@@ -405,6 +405,7 @@ struct WorkoutsView: View {
                     }
                 }
             }
+            .scrollEdgeEffectStyle(.soft, for: .vertical)
             .sheet(isPresented: $showingActiveWorkout, content: {
                 if let workout = selectedWorkout, let day = selectedDay {
                     if workoutManager.isWorkoutStarted {

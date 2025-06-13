@@ -11,7 +11,7 @@ struct DashboardView: View {
     @StateObject private var healthKitManager = HealthKitManager()
     @StateObject private var workoutManager = WorkoutManager()
     
-    @State private var showGoalSheet = false
+//    @State private var showGoalSheet = false
     @State private var showingActiveWorkout = false
     @State private var selectedWorkout: ActiveWorkout? = nil
     @State private var selectedDay: WorkoutDay? = nil
@@ -115,11 +115,9 @@ struct DashboardView: View {
             formatter.dateFormat = "EEEE, d MMMM"
             return formatter.string(from: currentDate)
         }
-        
-        ZStack {
-            ScrollView {
+        NavigationStack {
+            ZStack {
                 VStack(spacing: 10) {
-                    
                     HStack {
                         VStack(alignment: .leading) {
                             Text("Chris Sanchez")
@@ -134,282 +132,297 @@ struct DashboardView: View {
                         Spacer()
                     }
                     
-                    HStack {
-                        LogWeight(action: {
-                            // Add weight logging action here
-                            print("Log weight tapped")
-                        })
+                    HStack(spacing: 30) {
+                        NavigationLink {
+                            Text("Log Weight")
+                        } label: {
+                            Label("Log Weight", systemImage: "scalemass.fill")
+                        }
                         
-                        LogHydration(action: {
-                            // Add hydration logging action here
-                            print("Log hydration tapped")
-                        })
-                        
-                        AdjustGoals(showGoalSheet: $showGoalSheet)
+                        NavigationLink {
+                            Text("I'm Thirsty")
+                        } label: {
+                            Label("Log Hydration", systemImage: "waterbottle.fill")
+                        }
+
+                        NavigationLink(destination: GoalAdjustmentView(
+                            calorieGoal: .constant(2300),
+                            hydrationGoal: .constant(4000),
+                            stepGoal: .constant(10000)
+                        )) {
+                            Label("Adjust Goals", systemImage: "figure.run.square.stack.fill")
+                                
+                        }
                     }
-                    .font(.system(size: 14))
-                    .frame(maxWidth: .infinity, alignment: .leading)
+                    .padding(10)
+                    .fontWeight(.semibold)
+                    .font(.system(size: 12))
+                    .frame(maxWidth: .infinity, alignment: .center)
                     .glassEffect()
                     .tint(Color.buttonSecondary)
                     
-                    // STATS
-                    VStack(alignment: .leading, spacing: 15) {
-                        HStack {
-                            VStack(alignment: .leading) {
-                                Text("Body Weight (kg)")
-                                    .font(.system(size: 13))
-                                    .padding(.bottom, 5)
-                                    .foregroundStyle(.textSecondary)
-                                HStack {
-                                    Image(systemName: "scalemass.fill")
-                                        .foregroundStyle(Color.buttonSecondary)
-                                        .font(.system(size: 35))
-                                        .padding(5)
-                                        .background((Color.buttonSecondary).opacity(0.2))
-                                        .cornerRadius(10)
-                                    Text(healthKitManager.bodyWeight)
-                                        .font(Font.custom("Montserrat", size: 28))
-                                        .fontWeight(.semibold)
-                                        .foregroundStyle(.textPrimary)
-                                        .animation(.bouncy)
+                    ScrollView {
+                        // STATS
+                        VStack(alignment: .leading, spacing: 15) {
+                            HStack {
+                                VStack(alignment: .leading) {
+                                    Text("Body Weight (kg)")
+                                        .font(.system(size: 13))
+                                        .padding(.bottom, 5)
+                                        .foregroundStyle(.textSecondary)
+                                    HStack {
+                                        Image(systemName: "scalemass.fill")
+                                            .foregroundStyle(Color.buttonSecondary)
+                                            .font(.system(size: 35))
+                                            .padding(5)
+                                            .background((Color.buttonSecondary).opacity(0.2))
+                                            .cornerRadius(10)
+                                        Text(healthKitManager.bodyWeight)
+                                            .font(Font.custom("Montserrat", size: 28))
+                                            .fontWeight(.semibold)
+                                            .foregroundStyle(.textPrimary)
+                                            .animation(.bouncy)
+                                    }
                                 }
-                            }
-                            .frame(maxWidth: .infinity, alignment: .leading)
-                            Spacer()
-                            VStack(alignment: .leading) {
-                                Text("Steps")
-                                    .font(.system(size: 13))
-                                    .padding(.bottom, 5)
-                                    .foregroundStyle(.textSecondary)
-                                HStack {
-                                    CircularProgressBar(progress: {
-                                        let stepString = healthKitManager.stepCount.replacingOccurrences(of: ",", with: "")
-                                        let steps = Double(stepString) ?? 0
-                                        return min(steps / Double(StepsGoal), 1.0)
-                                    }(),
-                                                        strokeWidth: 5,
-                                                        backgroundColor: Color.gray.opacity(0.2),
-                                                        foregroundColor: .orange,
-                                                        icon: Image( "stepIcon").renderingMode(.template),
-                                                        iconColor: .orange)
+                                .frame(maxWidth: .infinity, alignment: .leading)
+                                Spacer()
+                                VStack(alignment: .leading) {
+                                    Text("Steps")
+                                        .font(.system(size: 13))
+                                        .padding(.bottom, 5)
+                                        .foregroundStyle(.textSecondary)
+                                    HStack {
+                                        CircularProgressBar(progress: {
+                                            let stepString = healthKitManager.stepCount.replacingOccurrences(of: ",", with: "")
+                                            let steps = Double(stepString) ?? 0
+                                            return min(steps / Double(StepsGoal), 1.0)
+                                        }(),
+                                                            strokeWidth: 5,
+                                                            backgroundColor: Color.gray.opacity(0.2),
+                                                            foregroundColor: .orange,
+                                                            icon: Image( "stepIcon").renderingMode(.template),
+                                                            iconColor: .orange)
                                         .padding(.trailing, 5)
-                                    Text(healthKitManager.stepCount)
+                                        Text(healthKitManager.stepCount)
+                                            .font(Font.custom("Montserrat", size: 28))
+                                            .fontWeight(.semibold)
+                                            .foregroundStyle(.textPrimary)
+                                            .animation(.bouncy)
+                                    }
+                                }
+                                .frame(maxWidth: .infinity, alignment: .leading)
+                            }
+                            .padding(.top, 16)
+                            .padding(.horizontal, 16)
+                            
+                            Divider()
+                                .padding(.horizontal, 16)
+                            
+                            HStack {
+                                CircularProgressBar(progress: {
+                                    let hydrationString = healthKitManager.hydration.replacingOccurrences(of: ",", with: "")
+                                    let hydration = Double(hydrationString) ?? 0
+                                    return min(hydration / Double(HydrationGoal), 1.0)
+                                }(),
+                                                    strokeWidth: 5,
+                                                    backgroundColor: Color.gray.opacity(0.2),
+                                                    foregroundColor: .hydration,
+                                                    icon: Image(systemName: "drop.fill"),
+                                                    iconColor: .hydration)
+                                .padding(.trailing, 12)
+                                
+                                VStack(alignment: .leading) {
+                                    Text(healthKitManager.hydration)
                                         .font(Font.custom("Montserrat", size: 28))
                                         .fontWeight(.semibold)
                                         .foregroundStyle(.textPrimary)
                                         .animation(.bouncy)
+                                    Text("Hydration (ml)")
+                                        .font(.system(size: 13))
+                                        .foregroundStyle(.textSecondary)
                                 }
-                            }
-                            .frame(maxWidth: .infinity, alignment: .leading)
-                        }
-                        .padding(.top, 16)
-                        .padding(.horizontal, 16)
-                        
-                        Divider()
-                            .padding(.horizontal, 16)
-                        
-                        HStack {
-                            CircularProgressBar(progress: {
-                                let hydrationString = healthKitManager.hydration.replacingOccurrences(of: ",", with: "")
-                                let hydration = Double(hydrationString) ?? 0
-                                return min(hydration / Double(HydrationGoal), 1.0)
-                            }(),
-                                                strokeWidth: 5,
-                                                backgroundColor: Color.gray.opacity(0.2),
-                                                foregroundColor: .hydration,
-                                                icon: Image(systemName: "drop.fill"),
-                                                iconColor: .hydration)
-                                .padding(.trailing, 12)
-                            
-                            VStack(alignment: .leading) {
-                                Text(healthKitManager.hydration)
-                                    .font(Font.custom("Montserrat", size: 28))
-                                    .fontWeight(.semibold)
-                                    .foregroundStyle(.textPrimary)
-                                    .animation(.bouncy)
-                                Text("Hydration (ml)")
-                                    .font(.system(size: 13))
+                                Spacer()
+                                Image(systemName: "chevron.right")
                                     .foregroundStyle(.textSecondary)
                             }
-                            Spacer()
-                            Image(systemName: "chevron.right")
-                                .foregroundStyle(.textSecondary)
-                        }
-                        .padding(.horizontal)
-                        
-                        Divider()
-                            .padding(.horizontal, 16)
-                        
-                        HStack {
-                            CircularProgressBar(
-                                progress: {
-                                    let calorieString = healthKitManager.calories.replacingOccurrences(of: ",", with: "")
-                                    let calories = Double(calorieString) ?? 0
-                                    return min(calories / Double(CalorieGoal), 1.0)
-                                }(),
-                                strokeWidth: 5,
-                                backgroundColor: Color.gray.opacity(0.2),
-                                foregroundColor: .calories,
-                                icon: Image(systemName: "fork.knife"),
-                                iconColor: .calories
-                            )
-                                .padding(.trailing, 12)
+                            .padding(.horizontal)
                             
-                            VStack(alignment: .leading) {
-                                Text(healthKitManager.calories)
-                                    .font(Font.custom("Montserrat", size: 28))
-                                    .fontWeight(.semibold)
-                                    .foregroundStyle(.textPrimary)
-                                    .animation(.bouncy)
-                                Text("Calories (kcal)")
-                                    .font(.system(size: 13))
+                            Divider()
+                                .padding(.horizontal, 16)
+                            
+                            HStack {
+                                CircularProgressBar(
+                                    progress: {
+                                        let calorieString = healthKitManager.calories.replacingOccurrences(of: ",", with: "")
+                                        let calories = Double(calorieString) ?? 0
+                                        return min(calories / Double(CalorieGoal), 1.0)
+                                    }(),
+                                    strokeWidth: 5,
+                                    backgroundColor: Color.gray.opacity(0.2),
+                                    foregroundColor: .calories,
+                                    icon: Image(systemName: "fork.knife"),
+                                    iconColor: .calories
+                                )
+                                .padding(.trailing, 12)
+                                
+                                VStack(alignment: .leading) {
+                                    Text(healthKitManager.calories)
+                                        .font(Font.custom("Montserrat", size: 28))
+                                        .fontWeight(.semibold)
+                                        .foregroundStyle(.textPrimary)
+                                        .animation(.bouncy)
+                                    Text("Calories (kcal)")
+                                        .font(.system(size: 13))
+                                        .foregroundStyle(.textSecondary)
+                                }
+                                Spacer()
+                                Image(systemName: "chevron.right")
                                     .foregroundStyle(.textSecondary)
                             }
-                            Spacer()
-                            Image(systemName: "chevron.right")
-                                .foregroundStyle(.textSecondary)
+                            .padding(.bottom, 16)
+                            .padding(.horizontal)
                         }
-                        .padding(.bottom, 16)
-                        .padding(.horizontal)
-                    }
-                    .overlay(
-                        RoundedRectangle(cornerRadius: 20)
-                            .stroke(Color.gray, lineWidth: 1)
-                    )
-                    .cornerRadius(20)
-                    
-                    // WORKOUTS SECTION
-                    VStack(alignment: .leading, spacing: 6) {
-                        Text("Workouts")
-                            .fontWeight(.bold)
-                            .font(Font.custom("Montserrat", size: 20))
-                            .foregroundStyle(.primary)
-                        
-                        Text("Today's Workout")
-                            .fontWeight(.semibold)
-                            .font(.system(size: 13))
-                            .foregroundStyle(.secondary)
-                        
-                        // Today's workout card
-                        Button(action: {
-                            if !todaysWorkout.isRestDay {
-                                selectedWorkout = ActiveWorkout(
-                                    name: todaysWorkout.name,
-                                    exercises: getExercisesForWorkout(todaysWorkout.name)
-                                )
-                                selectedDay = WorkoutDay(
-                                    name: currentDayOfWeek,
-                                    dayOfWeek: formattedDate,
-                                    workout: todaysWorkout,
-                                    isCurrentDay: true
-                                )
-                                showingActiveWorkout = true
-                            }
-                        }) {
-                            if todaysWorkout.isRestDay {
-                                WorkoutCardRestView(
-                                    workout: todaysWorkout.name,
-                                    exercises: todaysWorkout.exercises,
-                                    image: todaysWorkout.image,
-                                    isRestDay: true,
-                                    completed: todaysWorkout.completed
-                                )
-                            } else {
-                                WorkoutCardHomeView(
-                                    workout: todaysWorkout.name,
-                                    exercises: todaysWorkout.exercises,
-                                    image: todaysWorkout.image,
-                                    isRestDay: todaysWorkout.isRestDay,
-                                    completed: todaysWorkout.completed
-                                )
-                            }
-                        }
-                        .buttonStyle(PlainButtonStyle())
-                        .padding()
                         .overlay(
                             RoundedRectangle(cornerRadius: 20)
                                 .stroke(Color.gray, lineWidth: 1)
                         )
                         .cornerRadius(20)
-                    
-                        HStack {
-                            Text("Other Workouts")
+                        
+                        // WORKOUTS SECTION
+                        VStack(alignment: .leading, spacing: 6) {
+                            Text("Workouts")
+                                .fontWeight(.bold)
+                                .font(Font.custom("Montserrat", size: 20))
+                                .foregroundStyle(.primary)
+                            
+                            Text("Today's Workout")
                                 .fontWeight(.semibold)
                                 .font(.system(size: 13))
                                 .foregroundStyle(.secondary)
-
-                            Spacer()
-
-                            NavigationLink(destination: WorkoutsView().environmentObject(workoutManager)) {
-                                Text("See all")
+                            
+                            // Today's workout card
+                            Button(action: {
+                                if !todaysWorkout.isRestDay {
+                                    selectedWorkout = ActiveWorkout(
+                                        name: todaysWorkout.name,
+                                        exercises: getExercisesForWorkout(todaysWorkout.name)
+                                    )
+                                    selectedDay = WorkoutDay(
+                                        name: currentDayOfWeek,
+                                        dayOfWeek: formattedDate,
+                                        workout: todaysWorkout,
+                                        isCurrentDay: true
+                                    )
+                                    showingActiveWorkout = true
+                                }
+                            }) {
+                                if todaysWorkout.isRestDay {
+                                    WorkoutCardRestView(
+                                        workout: todaysWorkout.name,
+                                        exercises: todaysWorkout.exercises,
+                                        image: todaysWorkout.image,
+                                        isRestDay: true,
+                                        completed: todaysWorkout.completed
+                                    )
+                                } else {
+                                    WorkoutCardHomeView(
+                                        workout: todaysWorkout.name,
+                                        exercises: todaysWorkout.exercises,
+                                        image: todaysWorkout.image,
+                                        isRestDay: todaysWorkout.isRestDay,
+                                        completed: todaysWorkout.completed
+                                    )
+                                }
+                            }
+                            .buttonStyle(PlainButtonStyle())
+                            .padding()
+                            .overlay(
+                                RoundedRectangle(cornerRadius: 20)
+                                    .stroke(Color.gray, lineWidth: 1)
+                            )
+                            .cornerRadius(20)
+                            
+                            HStack {
+                                Text("Other Workouts")
                                     .fontWeight(.semibold)
                                     .font(.system(size: 13))
-                                    .foregroundStyle(.primary)
+                                    .foregroundStyle(.secondary)
+                                
+                                Spacer()
+                                
+                                NavigationLink(destination: WorkoutsView().environmentObject(workoutManager)) {
+                                    Text("See all")
+                                        .fontWeight(.semibold)
+                                        .font(.system(size: 13))
+                                        .foregroundStyle(.primary)
+                                }
+                                .padding(5)
                             }
-                            .padding(5)
-                        }
-                        
-                        // Next workouts
-                        ScrollView(.horizontal, showsIndicators: false) {
-                            HStack(spacing: 15) {
-                                ForEach(nextWorkouts, id: \.name) { workout in
-                                    if workout.isRestDay {
-                                        WorkoutCardRestView(
-                                            workout: workout.name,
-                                            exercises: workout.exercises,
-                                            image: workout.image,
-                                            isRestDay: true,
-                                            completed: workout.completed
-                                        )
-                                        .frame(maxWidth: .infinity, maxHeight: 250)
-                                        .background(Color(.systemBackground))
-                                        .cornerRadius(10)
-                                        .overlay(
-                                            RoundedRectangle(cornerRadius: 20)
-                                                .stroke(Color.gray, lineWidth: 1)
-                                        )
-                                    } else {
-                                        WorkoutCardHomeView(
-                                            workout: workout.name,
-                                            exercises: workout.exercises,
-                                            image: workout.image,
-                                            isRestDay: workout.isRestDay,
-                                            completed: workout.completed
-                                        )
-                                        .overlay(
-                                            RoundedRectangle(cornerRadius: 20)
-                                                .stroke(Color.gray, lineWidth: 1)
-                                        )
-                                        .cornerRadius(20)
+                            
+                            // Next workouts
+                            ScrollView(.horizontal, showsIndicators: false) {
+                                HStack(spacing: 15) {
+                                    ForEach(nextWorkouts, id: \.name) { workout in
+                                        if workout.isRestDay {
+                                            WorkoutCardRestView(
+                                                workout: workout.name,
+                                                exercises: workout.exercises,
+                                                image: workout.image,
+                                                isRestDay: true,
+                                                completed: workout.completed
+                                            )
+                                            .frame(maxWidth: .infinity, maxHeight: 250)
+                                            .background(Color(.systemBackground))
+                                            .cornerRadius(10)
+                                            .overlay(
+                                                RoundedRectangle(cornerRadius: 20)
+                                                    .stroke(Color.gray, lineWidth: 1)
+                                            )
+                                        } else {
+                                            WorkoutCardHomeView(
+                                                workout: workout.name,
+                                                exercises: workout.exercises,
+                                                image: workout.image,
+                                                isRestDay: workout.isRestDay,
+                                                completed: workout.completed
+                                            )
+                                            .overlay(
+                                                RoundedRectangle(cornerRadius: 20)
+                                                    .stroke(Color.gray, lineWidth: 1)
+                                            )
+                                            .cornerRadius(20)
+                                        }
                                     }
                                 }
                             }
+                            
+                            
                         }
-                        
-                        
+                        .padding(.top, 10)
                     }
-                    .padding(.top, 10)
+                    
                 }
+                .scrollEdgeEffectStyle(.soft, for:.vertical)
                 .padding(.horizontal, 16)
-            }
-            .refreshable {
-                healthKitManager.fetchHealthData()
-            }
-            .sheet(isPresented: $showGoalSheet) {
-                GoalAdjustmentView(
-                    calorieGoal: $CalorieGoal,
-                    hydrationGoal: $HydrationGoal,
-                    stepGoal: $StepsGoal
-                )
-            }
-            .sheet(isPresented: $showingActiveWorkout) {
-                if let workout = selectedWorkout, let day = selectedDay {
-                    if workoutManager.isWorkoutStarted {
-                        ActiveWorkoutView(workout: workout, scheduledDay: day)
-                            .environmentObject(workoutManager)
-                    } else {
-                        WorkoutConfigView(workout: workout, scheduledDay: day)
-                            .environmentObject(workoutManager)
+                .refreshable {
+                    healthKitManager.fetchHealthData()
+                }
+//                .sheet(isPresented: $showGoalSheet) {
+//                    GoalAdjustmentView(
+//                        calorieGoal: $CalorieGoal,
+//                        hydrationGoal: $HydrationGoal,
+//                        stepGoal: $StepsGoal
+//                    )
+//                }
+                .sheet(isPresented: $showingActiveWorkout) {
+                    if let workout = selectedWorkout, let day = selectedDay {
+                        if workoutManager.isWorkoutStarted {
+                            ActiveWorkoutView(workout: workout, scheduledDay: day)
+                                .environmentObject(workoutManager)
+                        } else {
+                            WorkoutConfigView(workout: workout, scheduledDay: day)
+                                .environmentObject(workoutManager)
+                        }
                     }
                 }
             }

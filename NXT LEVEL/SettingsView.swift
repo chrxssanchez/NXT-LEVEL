@@ -95,6 +95,7 @@ struct SettingsView: View {
                     }
                 }
             }
+            .scrollEdgeEffectStyle(.soft, for: .vertical)
             .navigationTitle("Settings")
             .sheet(isPresented: $showHealthPermissions) {
                 HealthPermissionsView()
