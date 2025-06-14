@@ -132,7 +132,7 @@ struct DashboardView: View {
                         Spacer()
                     }
                     
-                    HStack(spacing: 30) {
+                    HStack(spacing: 40) {
                         NavigationLink {
                             Text("Log Weight")
                         } label: {
@@ -156,7 +156,7 @@ struct DashboardView: View {
                     }
                     .padding(10)
                     .fontWeight(.semibold)
-                    .font(.system(size: 12))
+                    .font(.caption)
                     .frame(maxWidth: .infinity, alignment: .center)
                     .glassEffect()
                     .tint(Color.buttonSecondary)
@@ -167,7 +167,7 @@ struct DashboardView: View {
                             HStack {
                                 VStack(alignment: .leading) {
                                     Text("Body Weight (kg)")
-                                        .font(.system(size: 13))
+                                        .font(.caption)
                                         .padding(.bottom, 5)
                                         .foregroundStyle(.textSecondary)
                                     HStack {
@@ -188,7 +188,7 @@ struct DashboardView: View {
                                 Spacer()
                                 VStack(alignment: .leading) {
                                     Text("Steps")
-                                        .font(.system(size: 13))
+                                        .font(.caption)
                                         .padding(.bottom, 5)
                                         .foregroundStyle(.textSecondary)
                                     HStack {
@@ -238,7 +238,7 @@ struct DashboardView: View {
                                         .foregroundStyle(.textPrimary)
                                         .animation(.bouncy)
                                     Text("Hydration (ml)")
-                                        .font(.system(size: 13))
+                                        .font(.caption)
                                         .foregroundStyle(.textSecondary)
                                 }
                                 Spacer()
@@ -272,7 +272,7 @@ struct DashboardView: View {
                                         .foregroundStyle(.textPrimary)
                                         .animation(.bouncy)
                                     Text("Calories (kcal)")
-                                        .font(.system(size: 13))
+                                        .font(.caption)
                                         .foregroundStyle(.textSecondary)
                                 }
                                 Spacer()
@@ -292,12 +292,13 @@ struct DashboardView: View {
                         VStack(alignment: .leading, spacing: 6) {
                             Text("Workouts")
                                 .fontWeight(.bold)
-                                .font(Font.custom("Montserrat", size: 20))
+                                .font(Font.custom("Montserrat", size: 28))
+                            
                                 .foregroundStyle(.primary)
                             
                             Text("Today's Workout")
                                 .fontWeight(.semibold)
-                                .font(.system(size: 13))
+                                .font(.headline)
                                 .foregroundStyle(.secondary)
                             
                             // Today's workout card
@@ -342,43 +343,25 @@ struct DashboardView: View {
                             )
                             .cornerRadius(20)
                             
-                            HStack {
-                                Text("Other Workouts")
-                                    .fontWeight(.semibold)
-                                    .font(.system(size: 13))
-                                    .foregroundStyle(.secondary)
-                                
-                                Spacer()
-                                
-                                NavigationLink(destination: WorkoutsView().environmentObject(workoutManager)) {
-                                    Text("See all")
+                                HStack(spacing: 5) {
+                                    Text("Other Workouts")
                                         .fontWeight(.semibold)
-                                        .font(.system(size: 13))
-                                        .foregroundStyle(.primary)
+                                        .font(.headline)
+                                        .foregroundStyle(.secondary)
+                                    NavigationLink(destination: WorkoutsView().environmentObject(workoutManager)) {
+                                    Image(systemName: "chevron.right")
+                                            .imageScale(.small)
+                                        .font(.headline)
+                                        .tint(Color.buttonSecondary)
                                 }
-                                .padding(5)
+                                    .padding(.vertical, 5)
                             }
                             
                             // Next workouts
                             ScrollView(.horizontal, showsIndicators: false) {
                                 HStack(spacing: 15) {
                                     ForEach(nextWorkouts, id: \.name) { workout in
-                                        if workout.isRestDay {
-                                            WorkoutCardRestView(
-                                                workout: workout.name,
-                                                exercises: workout.exercises,
-                                                image: workout.image,
-                                                isRestDay: true,
-                                                completed: workout.completed
-                                            )
-                                            .frame(maxWidth: .infinity, maxHeight: 250)
-                                            .background(Color(.systemBackground))
-                                            .cornerRadius(10)
-                                            .overlay(
-                                                RoundedRectangle(cornerRadius: 20)
-                                                    .stroke(Color.gray, lineWidth: 1)
-                                            )
-                                        } else {
+                                        if !workout.isRestDay {
                                             WorkoutCardHomeView(
                                                 workout: workout.name,
                                                 exercises: workout.exercises,
@@ -386,13 +369,14 @@ struct DashboardView: View {
                                                 isRestDay: workout.isRestDay,
                                                 completed: workout.completed
                                             )
-                                            .overlay(
-                                                RoundedRectangle(cornerRadius: 20)
-                                                    .stroke(Color.gray, lineWidth: 1)
-                                            )
-                                            .cornerRadius(20)
+                                            
                                         }
                                     }
+                                    .overlay(
+                                        RoundedRectangle(cornerRadius: 20)
+                                            .stroke(Color.gray, lineWidth: 1)
+                                    )
+                                    .cornerRadius(20)
                                 }
                             }
                             
@@ -407,13 +391,6 @@ struct DashboardView: View {
                 .refreshable {
                     healthKitManager.fetchHealthData()
                 }
-//                .sheet(isPresented: $showGoalSheet) {
-//                    GoalAdjustmentView(
-//                        calorieGoal: $CalorieGoal,
-//                        hydrationGoal: $HydrationGoal,
-//                        stepGoal: $StepsGoal
-//                    )
-//                }
                 .sheet(isPresented: $showingActiveWorkout) {
                     if let workout = selectedWorkout, let day = selectedDay {
                         if workoutManager.isWorkoutStarted {
